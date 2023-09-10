@@ -392,13 +392,21 @@ public class SQLiteBase: NSObject {
     private func getColumnValue(index:CInt, type:CInt, stmt:OpaquePointer)->Any? {
         // Integer
         if type == SQLITE_INTEGER {
-            let val = sqlite3_column_int64(stmt, index)
-            return Int(val)
+            if sqlite3_column_type(stmt, index) == SQLITE_NULL {
+                return nil
+            } else {
+                let val = sqlite3_column_int64(stmt, index)
+                return Int(val)
+            }
         }
         // Float
         if type == SQLITE_FLOAT {
-            let val = sqlite3_column_double(stmt, index)
-            return Double(val)
+            if sqlite3_column_type(stmt, index) == SQLITE_NULL {
+                return nil
+            } else {
+                let val = sqlite3_column_double(stmt, index)
+                return Double(val)
+            }
         }
         // Text - handled by default handler at end
         // Blob
