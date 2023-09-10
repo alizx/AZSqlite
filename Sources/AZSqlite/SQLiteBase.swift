@@ -25,11 +25,11 @@ public class SQLiteBase: NSObject {
     /// The internal GCD queue
     private var queue:DispatchQueue!
     /// Internal handle to the currently open SQLite DB instance
-    internal var db:OpaquePointer? = nil
+    internal var db: OpaquePointer? = nil
     /// Internal DateFormatter instance used to manage date formatting
     private let fmt = DateFormatter()
     /// Internal reference to the currently open database path
-    internal var path:String!
+    internal var path: String!
     
     override public init() {
         super.init()
@@ -114,14 +114,6 @@ public class SQLiteBase: NSObject {
             sqlite3_close(db)
             self.db = nil
         }
-    }
-    
-    /// Returns an ISO-8601 date string for a given date.
-    ///
-    /// - Parameter date: The date to format in to an ISO-8601 string
-    /// - Returns: A string with the date in ISO-8601 format.
-    func dbDate(date:Date) -> String {
-        return fmt.string(from:date)
     }
     
     /// Execute SQL (non-query) command with (optional) parameters and return result code
@@ -219,8 +211,8 @@ public class SQLiteBase: NSObject {
                 } else if let data = params![ndx-1] as? NSData {
                     flag = sqlite3_bind_blob(stmt, CInt(ndx), data.bytes, CInt(data.length), SQLITE_TRANSIENT)
                 } else if let date = params![ndx-1] as? Date {
-                    let txt = fmt.string(from:date)
-                    flag = sqlite3_bind_text(stmt, CInt(ndx), txt, -1, SQLITE_TRANSIENT)
+                    let timeInterval = date.timeIntervalSince1970
+                    flag = sqlite3_bind_double(stmt, CInt(ndx), timeInterval)
                 } else if let val = params![ndx-1] as? Bool {
                     let num = val ? 1 : 0
                     flag = sqlite3_bind_int(stmt, CInt(ndx), CInt(num))
@@ -435,9 +427,15 @@ public class SQLiteBase: NSObject {
                 }
             }
             // If not a text date, then it's a time interval
-            let val = sqlite3_column_double(stmt, index)
-            let dt = Date(timeIntervalSince1970: val)
-            return dt
+            
+            if sqlite3_column_type(stmt, index) == SQLITE_NULL {
+                return nil
+            } else {
+                let val = sqlite3_column_double(stmt, index)
+                let dt = Date(timeIntervalSince1970: val)
+                return dt
+            }
+           
         }
         // If nothing works, return a string representation
         if let ptr = UnsafeRawPointer.init(sqlite3_column_text(stmt, index)) {
