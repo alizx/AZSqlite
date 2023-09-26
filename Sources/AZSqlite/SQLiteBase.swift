@@ -415,28 +415,29 @@ public class SQLiteBase: NSObject {
         }
         // Date
         if type == SQLITE_DATE {
-            // Is this a text date
-            if let ptr = UnsafeRawPointer.init(sqlite3_column_text(stmt, index)) {
-                let uptr = ptr.bindMemory(to:CChar.self, capacity:0)
-                if let txt = String(validatingUTF8:uptr) {
-                    // Get date from string
-                    if let dt = fmt.date(from: txt) {
-                        return dt
-                    } else {
-                        NSLog("String value: \(txt) but could not be converted to date!")
-                    }
-                }
-            }
-            // If not a text date, then it's a time interval
-            
-            if sqlite3_column_type(stmt, index) == SQLITE_NULL {
+            let columnType = sqlite3_column_type(stmt, index)
+            switch columnType {
+            case SQLITE_NULL:
                 return nil
-            } else {
+            case SQLITE_INTEGER:
                 let val = sqlite3_column_int64(stmt, index)
                 let dt = Date(timeIntervalSince1970: TimeInterval(val))
                 return dt
+            case SQLITE_TEXT:
+                if let ptr = UnsafeRawPointer.init(sqlite3_column_text(stmt, index)) {
+                    let uptr = ptr.bindMemory(to:CChar.self, capacity:0)
+                    if let txt = String(validatingUTF8:uptr) {
+                        // Get date from string
+                        if let dt = fmt.date(from: txt) {
+                            return dt
+                        } else {
+                            NSLog("String value: \(txt) but could not be converted to date!")
+                        }
+                    }
+                }
+            default:
+                NSLog("Value but could not be converted to date!")
             }
-           
         }
         // If nothing works, return a string representation
         if let ptr = UnsafeRawPointer.init(sqlite3_column_text(stmt, index)) {
