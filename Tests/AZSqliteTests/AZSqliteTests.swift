@@ -48,7 +48,7 @@ final class AZSqliteTests: XCTestCase {
             intCol: 123,
             doubleCol: 123.456,
             boolCol: true,
-            dateCol: Date(timeIntervalSince1970: 100),
+            dateCol: Date(timeIntervalSince1970: 1695697989),
             nullableStrCol: nil,
             nullableIntCol: nil,
             nullableDoubleCol: nil,
@@ -106,12 +106,12 @@ final class AZSqliteTests: XCTestCase {
             intCol: 2,
             doubleCol: 2.2,
             boolCol: false,
-            dateCol: Date(timeIntervalSince1970: 100),
+            dateCol: Date(timeIntervalSince1970: 1695697989),
             nullableStrCol: "NullableStr2",
             nullableIntCol: 2,
             nullableDoubleCol: 2.2,
             nullableBoolCol: false,
-            nullableDateCol: Date(timeIntervalSince1970: 100)
+            nullableDateCol: Date(timeIntervalSince1970: 1695697989)
         )
         
         // Inserting the second data entry into the database

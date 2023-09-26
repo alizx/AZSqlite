@@ -212,7 +212,8 @@ public class SQLiteBase: NSObject {
                     flag = sqlite3_bind_blob(stmt, CInt(ndx), data.bytes, CInt(data.length), SQLITE_TRANSIENT)
                 } else if let date = params![ndx-1] as? Date {
                     let timeInterval = date.timeIntervalSince1970
-                    flag = sqlite3_bind_double(stmt, CInt(ndx), timeInterval)
+                    let timeIntervalAsInt = Int(timeInterval)  // Convert to Int
+                    let flag = sqlite3_bind_int64(stmt, CInt(ndx), sqlite3_int64(timeIntervalAsInt))  // Bind as int64
                 } else if let val = params![ndx-1] as? Bool {
                     let num = val ? 1 : 0
                     flag = sqlite3_bind_int(stmt, CInt(ndx), CInt(num))
@@ -431,8 +432,8 @@ public class SQLiteBase: NSObject {
             if sqlite3_column_type(stmt, index) == SQLITE_NULL {
                 return nil
             } else {
-                let val = sqlite3_column_double(stmt, index)
-                let dt = Date(timeIntervalSince1970: val)
+                let val = sqlite3_column_int64(stmt, index)
+                let dt = Date(timeIntervalSince1970: TimeInterval(val))
                 return dt
             }
            
